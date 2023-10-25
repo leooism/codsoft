@@ -4,7 +4,7 @@ import Jobs from "./jobs/Jobs";
 import Page from "./dashboard/Page";
 
 const App = () => {
-	return <Page />;
+	return <Home />;
 };
 
 export default App;
