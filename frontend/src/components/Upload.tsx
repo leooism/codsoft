@@ -6,6 +6,8 @@ function Upload() {
 		accept: {
 			"application/*": [".pdf"],
 		},
+		maxFiles: 1,
+		maxSize: 5000000,
 	});
 
 	// const files = acceptedFiles.map((file) =>
