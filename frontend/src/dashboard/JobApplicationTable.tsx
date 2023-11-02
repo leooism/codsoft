@@ -8,30 +8,31 @@ import {
 	TableHeader,
 	TableRow,
 } from "../@/components/ui/table";
-import { JobApplicationTableType } from "./Dashboard";
+import { JobApplicationType } from "./JobApplication";
+import formatDate from "../libs/formatDate";
 
 export function JobApplicationTable({
 	application,
 }: {
-	application: JobApplicationTableType;
+	application: JobApplicationType[];
 }) {
 	return (
 		<Table>
 			<TableHeader>
 				<TableRow>
 					<TableHead className="w-[200px]">Job Title</TableHead>
-					<TableHead>Type</TableHead>
 					<TableHead>Deadline</TableHead>
+					<TableHead>Applied At</TableHead>
 					<TableHead>Status</TableHead>
 				</TableRow>
 			</TableHeader>
 			<TableBody>
-				{application.map((invoice) => (
-					<TableRow key={invoice.invoice}>
-						<TableCell className="font-medium">{invoice.invoice}</TableCell>
-						<TableCell>{invoice.paymentStatus}</TableCell>
-						<TableCell>{invoice.paymentMethod}</TableCell>
-						<TableCell>{invoice.totalAmount}</TableCell>
+				{application.map((app) => (
+					<TableRow key={app._id}>
+						<TableCell className="font-medium">{app.job.title}</TableCell>
+						<TableCell>"YO"</TableCell>
+						<TableCell>{formatDate(app.appliedAt)}</TableCell>
+						<TableCell>{app.status}</TableCell>
 					</TableRow>
 				))}
 			</TableBody>
