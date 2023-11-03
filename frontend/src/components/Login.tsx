@@ -47,14 +47,14 @@ const Login = () => {
 				}
 			);
 			const data = response.json();
-
-			setUser({
-				_id: data.data.user._id,
-				email: data.data.user.email,
-				fullName: data.data.user.firstName,
-				role: data.data.user.role,
-				profileImage: data.data.user.photo,
-			});
+			console.log(data);
+			// setUser({
+			// 	_id: data.data.user._id,
+			// 	email: data.data.user.email,
+			// 	fullName: data.data.user.firstName,
+			// 	role: data.data.user.role,
+			// 	profileImage: data.data.user.photo,
+			// });
 			// if (data.token) {
 			// 	// window.cookie
 			// 	setCookie("jwt", data.token, {
