@@ -1,15 +1,9 @@
 {
-	"version": 2,
-	"builds": [
+	"framework": "vite",
+	"rewrites": [
 		{
-			"src": "*.js",
-			"use": "@vercel/node"
-		}
-	],
-	"routes": [
-		{
-			"src": "/(.*)",
-			"dest": "/"
+			"source": "/backend/(.*)",
+			"destination": "/backend/index.js"
 		}
 	]
 }
