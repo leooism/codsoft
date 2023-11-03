@@ -4,6 +4,7 @@ module.exports = (err, req, res, _) => {
 			status: "Failed",
 			message: err.message.message,
 		});
+		
 	return res.status(err.statusCode || 500).json({
 		status: "Failed",
 		message: err.message,

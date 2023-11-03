@@ -70,6 +70,8 @@ jobRouter.post(
 			zip,
 			company: company._id,
 		});
+		company.jobPosted.push(job._id);
+		company.save();
 
 		res.status(201).json({
 			status: "Success",
@@ -99,6 +101,16 @@ jobRouter.get("/:id", async (req, res) => {
 	});
 });
 
+jobRouter.delete(
+	"/:id",
+	catchAsync(async (req, res, next) => {
+		const data = await Company.findByIdAndDelete(req.params.id);
+		res.status(200).json({
+			status: "Success",
+			data,
+		});
+	})
+);
 //alias
 jobRouter.get("/recent-jobs", async (req, res) => {
 	res.json({
