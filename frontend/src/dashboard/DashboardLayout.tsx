@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import {
 	DashboardIcon,
 	SwitchIcon,
@@ -11,10 +11,11 @@ import {
 	PersonIcon,
 	MagnifyingGlassIcon,
 } from "@radix-ui/react-icons";
-import { Link, Outlet, useLocation } from "react-router-dom";
-import useUserContext from "../main";
+import { Form, Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useUserContext, useDarkMode } from "../main";
+
 import logo from "../assets/logo.svg";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, Users2Icon } from "lucide-react";
 
 import {
 	Dialog,
@@ -26,13 +27,25 @@ import {
 import { Input } from "../@/components/ui/input";
 import { Label } from "../@/components/ui/label";
 import { Button } from "../@/components/ui/button";
+import { useCookies } from "react-cookie";
 import Select from "react-select";
+import { toast, ToastContainer } from "react-toastify";
 
 export const DashboardLayout = () => {
+	const form = useRef<HTMLFormElement>(null);
+	const submitter = useRef<HTMLButtonElement>(null);
 	const { pathname } = useLocation();
 	const { fullName, role } = useUserContext();
+	const [_, removeCookie] = useCookies(["jwt"]);
+	const { isDarkMode, toggleDarkMode } = useDarkMode();
+	const navigate = useNavigate();
+
 	return (
-		<div className="grid grid-cols-[0.25fr_1fr_0.25fr] w-screen h-screen grid-rows-[0.1fr_1fr] items-center">
+		<div
+			className={`grid grid-cols-[0.25fr_1fr_0.25fr] w-screen h-screen grid-rows-[0.1fr_1fr] items-center ${
+				isDarkMode ? "bg-black" : ""
+			}`}
+		>
 			<div className="logo flex-1 ml-2">
 				<img src={logo} alt="logo" className=" w-32 h-10 scale-[3]" />
 			</div>
@@ -55,6 +68,18 @@ export const DashboardLayout = () => {
 					<div className="mr-2">
 						{role.toLowerCase() === "employer" && (
 							<Dialog>
+								<ToastContainer
+									position="top-right"
+									autoClose={3000}
+									hideProgressBar={false}
+									newestOnTop={false}
+									closeOnClick
+									rtl={false}
+									pauseOnFocusLoss
+									draggable
+									pauseOnHover
+									theme="light"
+								/>
 								<DialogTrigger>
 									<PlusIcon className="hover:bg-blue-300 rounded-full" />
 								</DialogTrigger>
@@ -62,14 +87,56 @@ export const DashboardLayout = () => {
 									<DialogHeader>
 										<DialogTitle>Post Job</DialogTitle>
 									</DialogHeader>
-									<form action="" className="flex flex-col gap-2 ">
+									<Form
+										method="post"
+										ref={form}
+										className="flex flex-col gap-2 "
+										onSubmit={async (e) => {
+											e.preventDefault();
+
+											const data = new URLSearchParams(
+												new FormData(form.current, submitter.current)
+											);
+
+											let response = await fetch("http://localhost:3000/job", {
+												method: "post",
+												body: data,
+												credentials: "include",
+												mode: "cors",
+											});
+
+											response = await response.json();
+											response.status === "Success" &&
+												toast("Sucessfully Posted", {
+													position: "top-right",
+													autoClose: 10,
+													hideProgressBar: false,
+													closeOnClick: true,
+													pauseOnHover: false,
+													draggable: true,
+													progress: undefined,
+													theme: "light",
+												});
+											response.status === "Failed" &&
+												toast(response.message, {
+													position: "top-right",
+													autoClose: 10,
+													hideProgressBar: false,
+													closeOnClick: true,
+													pauseOnHover: false,
+													draggable: true,
+													progress: undefined,
+													theme: "light",
+												});
+										}}
+									>
 										<div className="flex flex-col w-full gap-1">
 											<Label htmlFor="jt">Job Title</Label>
 											<Input
 												type="text"
 												id="jt"
 												placeholder="Enter Job Title"
-												name="jobtitle"
+												name="title"
 												required
 											/>
 										</div>
@@ -77,6 +144,7 @@ export const DashboardLayout = () => {
 											<div className="flex flex-col gap-1 ">
 												<Label htmlFor="city">Urgent</Label>
 												<Select
+													name="urgent"
 													closeMenuOnSelect={false}
 													// defaultValue={[colourOptions[0], colourOptions[1]]}
 													options={[
@@ -94,6 +162,7 @@ export const DashboardLayout = () => {
 											<div className="flex flex-col gap-1">
 												<Label htmlFor="lname">Sectors </Label>
 												<Select
+													name="sector"
 													closeMenuOnSelect={false}
 													// defaultValue={[colourOptions[0], colourOptions[1]]}
 													isMulti
@@ -121,6 +190,7 @@ export const DashboardLayout = () => {
 											<div className="flex flex-col gap-1">
 												<Label htmlFor="type">Type</Label>
 												<Select
+													name="type"
 													closeMenuOnSelect={false}
 													// defaultValue={[colourOptions[0], colourOptions[1]]}
 													options={[
@@ -173,7 +243,7 @@ export const DashboardLayout = () => {
 													type="number"
 													id="totalapplicant"
 													placeholder="Total Applications"
-													name="totalapplicant"
+													name="totalApplicant"
 													required
 												/>
 											</div>
@@ -189,23 +259,40 @@ export const DashboardLayout = () => {
 											/>
 										</div>
 
-										<Button className="w-fit gap-2" type="submit">
+										<Button
+											className="w-fit gap-2"
+											type="submit"
+											ref={submitter}
+										>
 											<PlusIcon /> Post
 										</Button>
-									</form>
+									</Form>
 								</DialogContent>
 							</Dialog>
 						)}
 					</div>
 				</div>
 			</div>
-			<div className="hidden gap-2 items-center sm:flex">
+			<div className="hidden items-center sm:flex">
 				<div className="font-semibold flex">Welcome, {fullName}</div>
-				<SwitchIcon className="w-8 h-8" />
-				<LockOpen1Icon className="w-8 h-8" />
+				<div className="flex gap-2">
+					<SwitchIcon className="w-8 h-8" />
+					<LockOpen1Icon
+						className="w-8 h-8"
+						onClick={async () => {
+							await fetch("http:localhost:3000/user/logout", {
+								method: "get",
+								credentials: "include",
+								mode: "cors",
+							});
+							removeCookie("jwt", "removed", { expires: new Date() });
+							navigate("/");
+						}}
+					/>
+				</div>
 			</div>
 			<div className=" grid md:grid-cols-[0.25fr_1fr] grid-cols-[0.1fr_1fr] w-full h-full row-start-2 row-end-3 col-start-1 col-end-3">
-				<div className="flex sm:hidden h-full w-full flex-col  gap-2 rounded-lg shadow-lg p-2 bg-white">
+				<div className="flex sm:hidden h-full w-full flex-col  gap-2 rounded-lg shadow-lg p-2">
 					<Link to={""}>
 						<DashboardIcon className="w-6 h-6" />
 					</Link>
@@ -222,7 +309,7 @@ export const DashboardLayout = () => {
 						<GearIcon className="w-6 h-6" />
 					</Link>
 				</div>
-				<div className="sm:flex hidden flex-col gap-2 rounded-lg shadow-lg items-start p-2   bg-white ">
+				<div className="sm:flex hidden flex-col gap-2 rounded-lg shadow-lg items-start p-2   ">
 					<Link
 						to=""
 						className="p-2   items-center flex gap-2 w-full text-center hover:bg-blue-600 rounded-2xl hover:text-white font-semibold"
@@ -230,20 +317,41 @@ export const DashboardLayout = () => {
 						<DashboardIcon className="w-4 h-4" />
 						Dashboard{" "}
 					</Link>
-					<Link
-						to="searchjobs"
-						className="p-2 items-center  flex gap-2 w-full text-center hover:bg-blue-600 rounded-2xl hover:text-white font-semibold"
-					>
-						<BackpackIcon className="w-4 h-4" />
-						Search Jobs
-					</Link>
-					<Link
-						to="applications"
-						className="p-2  items-center flex gap-2 w-full text-center hover:bg-blue-600 rounded-2xl hover:text-white font-semibold"
-					>
-						<ClipboardIcon className="w-4 h-4" />
-						Applications
-					</Link>
+					{role.toLowerCase() === "employer" ? (
+						<Link
+							to="jobposted"
+							className="p-2  items-center flex gap-2 w-full text-center hover:bg-blue-600 rounded-2xl hover:text-white font-semibold"
+						>
+							<BackpackIcon className="w-4 h-4" />
+							Job Posted
+						</Link>
+					) : (
+						<Link
+							to="searchJobs"
+							className="p-2  items-center flex gap-2 w-full text-center hover:bg-blue-600 rounded-2xl hover:text-white font-semibold"
+						>
+							<ClipboardIcon className="w-4 h-4" />
+							Search Jobs
+						</Link>
+					)}
+
+					{role.toLowerCase() === "employer" ? (
+						<Link
+							to="applicants"
+							className="p-2  items-center flex gap-2 w-full text-center hover:bg-blue-600 rounded-2xl hover:text-white font-semibold"
+						>
+							<Users2Icon className="w-4 h-4" />
+							Applicants
+						</Link>
+					) : (
+						<Link
+							to="applications"
+							className="p-2  items-center flex gap-2 w-full text-center hover:bg-blue-600 rounded-2xl hover:text-white font-semibold"
+						>
+							<ClipboardIcon className="w-4 h-4" />
+							Applications
+						</Link>
+					)}
 					<Link
 						to="profile"
 						className="p-2  items-center flex gap-2 w-full text-center hover:bg-blue-600 rounded-2xl hover:text-white font-semibold"
@@ -260,7 +368,7 @@ export const DashboardLayout = () => {
 					</Link>
 				</div>
 				<div
-					className={` w-full h-full  rounded-lg shadow-2xl px-10  flex-col gap-2`}
+					className={` w-full h-full  rounded-lg shadow-2xl p-2 flex-col gap-2`}
 				>
 					{<Outlet />}
 				</div>

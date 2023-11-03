@@ -1,4 +1,4 @@
-import React, { useContext, useReducer } from "react";
+import React, { useContext, useReducer, useState } from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
@@ -23,8 +23,16 @@ type actionType = {
 	type: setUserDispatchType;
 	payload: userType;
 };
+type darkModeContextType = {
+	isDarkMode: boolean;
+	toogleDarkMode: () => void;
+};
 const userContext = React.createContext<userContextType>({} as userContextType);
+const darkModeContext = React.createContext<darkModeContextType>(
+	{} as darkModeContextType
+);
 const useUserContext = () => useContext(userContext);
+const useDarkMode = () => useContext(darkModeContext);
 const initalData = {
 	_id: "",
 	email: "",
@@ -65,10 +73,24 @@ const UserContextProvider = ({ children }: { children: React.ReactNode }) => {
 		</userContext.Provider>
 	);
 };
-export default useUserContext;
+
+const DarkModeProvider = ({ children }: { children: React.ReactNode }) => {
+	const [isDarkMode, setIsDarkMode] = useState(false);
+	const toggleDarkMode = () => setIsDarkMode((p) => !p);
+	return (
+		<darkModeContext.Provider
+			value={{ isDarkMode: isDarkMode, toggleDarkMode }}
+		>
+			{children}
+		</darkModeContext.Provider>
+	);
+};
+export { useUserContext, useDarkMode };
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-	<UserContextProvider>
-		<App />
-	</UserContextProvider>
+	<DarkModeProvider>
+		<UserContextProvider>
+			<App />
+		</UserContextProvider>
+	</DarkModeProvider>
 );

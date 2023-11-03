@@ -6,7 +6,7 @@ import logo from "../assets/logo.svg";
 import Login from "../components/Login";
 import Signup from "../components/Signup";
 import { Link } from "react-router-dom";
-import useUserContext from "../main";
+import { useUserContext } from "../main";
 
 const Header = () => {
 	const [isLoggedIn, setIsloggedIn] = useState(false);

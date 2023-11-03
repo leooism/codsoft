@@ -9,10 +9,16 @@ jobRouter.get("/", async (req, res) => {
 	const jobs = await Job.find(selectedFields)
 		.skip(queryParams.page ? queryParams - 1 : 0)
 		.limit(queryParams.limit ? queryParams.limit : 0)
-		.populate("company")
+		.populate({
+			path: "company",
+			populate: {
+				path: "jobPosted",
+				model: "job",
+			},
+		})
 		.exec();
 	res.json({
-		status: "Sucess",
+		status: "Success",
 		length: jobs.length,
 		jobs,
 	});
@@ -21,13 +27,29 @@ jobRouter.get("/", async (req, res) => {
 jobRouter.get("/:id", async (req, res) => {
 	const jobId = req.params.id;
 	if (!jobId) return;
-	const job = await Job.findById(jobId);
+	//Nested Population
+	const job = await Job.findById(jobId)
+		.populate({
+			path: "company",
+			populate: {
+				path: "jobPosted",
+				model: "job",
+			},
+		})
+		.exec();
 	if (!job)
 		return res.json({ status: "Failed", message: "No job found with this id" });
 
 	res.json({
-		status: "Sucessful",
+		status: "Success",
 		job,
+	});
+});
+
+//alias
+jobRouter.get("/recent-jobs", async (req, res) => {
+	res.json({
+		status: "Test",
 	});
 });
 

@@ -2,19 +2,22 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const JobApplicationSchema = new Schema({
-	title: {
-		type: String,
-		required: true,
+	job: {
+		type: Schema.Types.ObjectId,
+		ref: "job",
 	},
 	status: {
 		type: String,
 		required: true,
 	},
-	deadline: Date,
 	user: {
 		type: Schema.Types.ObjectId,
 		ref: "user",
 	},
+	appliedAt: {
+		type: Date,
+		required: true,
+	},
 });
 
-const JobApplication = mongoose.model("jobapplication", JobApplicationSchema);
+module.exports = mongoose.model("jobapplication", JobApplicationSchema);

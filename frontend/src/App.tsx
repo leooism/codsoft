@@ -6,11 +6,12 @@ import ErrorPage from "./error/error";
 import {
 	createBrowserRouter,
 	RouterProvider,
+	useNavigate,
 	useParams,
 } from "react-router-dom";
 import { useCookies } from "react-cookie";
 
-import useUserContext from "./main";
+import { useUserContext } from "./main";
 import useSWR from "swr";
 import fetcher from "./libs/fetcher";
 import Header from "./home/Header";
@@ -32,6 +33,7 @@ import { DashboardLayout } from "./dashboard/DashboardLayout";
 import Dashboard from "./dashboard/Dashboard";
 import Profile from "./dashboard/Profile";
 import { ProtectedRouter } from "./ProtectedRouter";
+import { ApplicantsTable } from "./dashboard/ApplicantsTable";
 
 const Job = () => {
 	const { id } = useParams();
@@ -39,8 +41,8 @@ const Job = () => {
 		status: string;
 		job: jobType;
 	}>(`http://localhost:3000/job/${id}`, fetcher);
-	console.log(data && data.job);
-	if (data && data.status === "Sucess")
+	if (isLoading) return <p>Loading</p>;
+	if (data && data.status === "Success")
 		return (
 			<div className="flex flex-col gap-2">
 				<Header />
@@ -150,7 +152,7 @@ const router = createBrowserRouter([
 				element: <Dashboard />,
 			},
 			{
-				path: "/dashboard/searchjobs",
+				path: "/dashboard/searchJobs",
 				element: <JobSearch />,
 			},
 			{
@@ -160,6 +162,14 @@ const router = createBrowserRouter([
 			{
 				path: "/dashboard/setting",
 				element: <p>Setting</p>,
+			},
+			{
+				path: "/dashboard/jobPosted",
+				element: <p>Job Posted</p>,
+			},
+			{
+				path: "/dashboard/applicants",
+				element: <ApplicantsTable />,
 			},
 			{
 				path: "/dashboard/profile",
@@ -179,35 +189,6 @@ const router = createBrowserRouter([
 ]);
 
 const App = () => {
-	const { setUser } = useUserContext();
-	const [cookie, _] = useCookies(["jwt"]);
-	useEffect(() => {
-		const fetchData = async () => {
-			if (!cookie.jwt) {
-				console.log("No cookie");
-			}
-
-			const response = await axios.post(
-				"http://localhost:3000/user/isLoggedIn",
-				{},
-				{
-					withCredentials: true,
-				}
-			);
-			const { data } = response;
-
-			if (data.status === "Success")
-				setUser({
-					_id: data.data._id,
-					email: data.data.email,
-					fullName: data.data.firstName,
-					role: data.data.role,
-					profileImage: data.data.profileImage,
-				});
-		};
-		fetchData();
-	}, [cookie]);
-
 	return <RouterProvider router={router} />;
 };
 

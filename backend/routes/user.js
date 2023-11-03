@@ -1,86 +1,10 @@
 const userRouter = require("express").Router();
 const User = require("../model/User");
-const jwt = require("jsonwebtoken");
-
-//Create signin token
-const signInToken = (id) =>
-	jwt.sign({ id }, process.env.JWT_SECRET_TOKEN, {
-		expiresIn: process.env.JWT_EXPIRES_IN,
-	});
-
-//Set singnintoken in cookie and send response
-const createSendToken = (user, req, res) => {
-	const token = signInToken(user._id);
-
-	//Set expiry date in milliseconds
-	res.cookie("jwt", token, {
-		expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-		httpOnly: true,
-	});
-	user.password = undefined;
-	res.json({
-		token,
-		data: {
-			user,
-		},
-	});
-};
-
-userRouter
-	.post("/login", async (req, res) => {
-		const { email, password } = req.body;
-
-		if (!email || !password)
-			return res.json({
-				status: "Failed",
-				message: "Please provide email or password",
-			});
-		//Check user exist
-		const user = await User.findOne({
-			email: email,
-		});
-		if (!user)
-			return res.json({ status: "Failed", message: "User doesn't exist" });
-		//check password match
-		if (!user.isPasswordCorrect(password))
-			return res.json({ status: "Failed", message: "Password didn't match" });
-
-		//Successfully log in user
-		createSendToken(user, req, res);
-	})
-	.post("/signup", async (req, res) => {
-		const {
-			firstName,
-			lastName,
-			email,
-			password,
-			passwordConfirm,
-			role,
-			photo,
-		} = req.body;
-		const isPasswordMatch = await User.isPasswordMatch(
-			password,
-			passwordConfirm
-		);
-		if (!isPasswordMatch)
-			return res.json({ status: "Failed", message: "Password didn't match" });
-
-		const user = await User.create({
-			firstName,
-			lastName,
-			email,
-			password,
-			passwordConfirm,
-			role,
-			photo,
-		});
-
-		createSendToken(user, req, res);
-	})
-	.post("/:id", async (req, res) => {
-		const {} = req.body;
-		//Update many -> password, email, fname, lname, photo, resume,
-	});
+const { login, signup, isLoggedIn } = require("../controllers/authController");
+const AppError = require("../util/AppError");
+const JobApplication = require("../model/JobApplication");
+const catchAsync = require("../util/catchAsync");
+userRouter.post("/login", login).post("/signup", signup);
 
 userRouter.delete("/:id", async (req, res) => {
 	const { password } = req.body;
@@ -89,7 +13,11 @@ userRouter.delete("/:id", async (req, res) => {
 		return res.json({ status: "Failed", message: "User doesn't exist" });
 
 	//Compare password
+	if (await !user.isPasswordCorrect(password)) {
+		return res.json({ status: "Failed", message: "Password is incorrect" });
+	}
 	//If password match delete password
+	// await User.findByIdAndDelete(req.params.id);
 
 	return res.json({
 		status: "Sucess",
@@ -98,31 +26,28 @@ userRouter.delete("/:id", async (req, res) => {
 	});
 });
 
-userRouter.get("/:id", async (req, res) => {
-	const user = await User.findById(req.params.id);
-	if (!user) return res.json({ status: "Failed", message: "User not found" });
+userRouter.post("/isLoggedIn", isLoggedIn);
 
-	return res.json({
-		status: "Sucess",
-		user: user.select(
-			"-password -passwordChangedAt -passwordConfirm -passwordResetToken"
-		),
-	});
-});
+userRouter.get(
+	"/appliedJobs",
+	catchAsync(async (req, res) => {
+		const { userId } = req.query;
+		const data = await JobApplication.find({
+			user: {
+				_id: userId,
+			},
+		})
+			.populate({
+				path: "job",
+			})
+			.select("-user")
+			.exec();
 
-userRouter.get("/forgotPassword", async (req, res) => {
-	const { email } = req.body;
-	const user = await User.findOne({ email });
-
-	if (!user)
-		return res.json({ status: "Failed", message: "User doesn't exist" });
-
-	//Create reset token
-
-	//Confirm that email is sent within that email address
-
-	//send email
-});
+		if (!data) throw new AppError("No data found", 202);
+		res.json({ status: "Success", data });
+	})
+);
+userRouter.get("/forgotPassword");
 
 userRouter.get("/resetPassword/:token", async (req, res) => {
 	const token = req.params.token;
@@ -137,16 +62,22 @@ userRouter.get("/resetPassword/:token", async (req, res) => {
 	//set password rest token to null
 	//set password token expire to null
 });
-userRouter.get("/logout", async (req, res) => {
-	res.cookie("jwt", "just_logged_out", {
-		expires: 0,
-		httpOnly: true,
-	});
-	res.json({
-		status: "Sucessful",
-		message: "Logged out sucessfully",
-	});
-});
+userRouter.get("/logout");
+
+userRouter.get(
+	"/:id",
+	catchAsync(async (req, res) => {
+		const user = await User.findById(req.params.id);
+		if (!user) throw new AppError("No user found", 202);
+
+		return res.json({
+			status: "Sucess",
+			user: user.select(
+				"-password -passwordChangedAt -passwordConfirm -passwordResetToken"
+			),
+		});
+	})
+);
 
 /* 
 

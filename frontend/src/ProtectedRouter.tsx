@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import useUserContext from "./main";
+import { useUserContext } from "./main";
 
 export const ProtectedRouter = ({
 	children,

@@ -2,7 +2,7 @@ import React from "react";
 import { useDropzone } from "react-dropzone";
 
 function Upload() {
-	const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+	const { _, getRootProps, getInputProps } = useDropzone({
 		accept: {
 			"application/*": [".pdf"],
 		},
@@ -23,7 +23,7 @@ function Upload() {
 	return (
 		<section className="container">
 			<div {...getRootProps({ className: "dropzone" })}>
-				<input id="dropzone-file" {...getInputProps()} />
+				<input id="dropzone-file" {...getInputProps()} name="resume" />
 				<div className="flex items-center justify-center w-full">
 					<label
 						htmlFor="dropzone-file"

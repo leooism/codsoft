@@ -12,13 +12,12 @@ import { Button } from "../@/components/ui/button";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useNavigate } from "react-router-dom";
-import useUserContext from "../main";
+// import { useNavigate } from "react-router-dom";
+import { useUserContext } from "../main";
 // import { useCookies } from "react-cookie";
 
 // import { useNavigate } from "react-router-dom";
 
-import axios from "axios";
 const Login = () => {
 	// const navigate = useNavigate();
 
@@ -26,7 +25,7 @@ const Login = () => {
 	const [password, setPassword] = useState("");
 	// const [error, setError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
-	const navigate = useNavigate();
+	// const navigate = useNavigate();
 	const { setUser } = useUserContext();
 	const handleLoginSubmit = async (e) => {
 		e.preventDefault();
@@ -53,7 +52,6 @@ const Login = () => {
 				role: data.data.user.role,
 				profileImage: data.data.user.photo,
 			});
-			navigate("/dashboard");
 			// if (data.token) {
 			// 	// window.cookie
 			// 	setCookie("jwt", data.token, {
@@ -94,18 +92,7 @@ const Login = () => {
 
 	return (
 		<Dialog>
-			<ToastContainer
-				position="top-right"
-				autoClose={3000}
-				hideProgressBar={false}
-				newestOnTop={false}
-				closeOnClick
-				rtl={false}
-				pauseOnFocusLoss
-				draggable
-				pauseOnHover
-				theme="light"
-			/>
+			
 
 			<DialogTrigger>
 				<Button variant="outline">Login</Button>

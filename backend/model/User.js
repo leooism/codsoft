@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const { Schema } = mongoose;
-
+const crypto = require("crypto");
 const userSchema = new Schema(
 	{
 		firstName: {
@@ -43,13 +43,14 @@ const userSchema = new Schema(
 				message: "Password didn't match",
 			},
 		},
-		passwordChangedAt: Date,
-		passwordResetToken: String,
-		passwordResetExpire: Date,
+		// passwordChangedAt: Date,
+		// passwordResetToken: String,
+		// passwordResetExpire: Date,
 		views: {
 			type: Number,
 			default: 0,
 		},
+		jobApplied: [{ ref: "job", type: Schema.Types.ObjectId }],
 	},
 	{
 		virtuals: {
@@ -70,23 +71,34 @@ userSchema.pre("save", async function (next) {
 	this.passwordConfirm = undefined;
 	next();
 });
+
 //Static method
 userSchema.statics = {
 	isPasswordMatch(p1, p2) {
 		return p1 === p2;
 	},
 };
-//Instance method
 
+//Instance method
 userSchema.methods.isPasswordCorrect = async function (candidatePassword) {
 	return await bcrypt.compare(candidatePassword, this.password);
 };
 
-userSchema.methods.generateResetPasswordTOken = function () {
-	//Reset token
-	//set reset token to user
-	//set password expiresat
-	//snd token
-};
+// userSchema.methods.generateResetPasswordTOken = function () {
+// 	//Reset token
+// 	const resetToken = crypto.randomBytes(32).toString("hex");
+// 	//set reset token to user
+// 	this.passwordResetToken = crypto
+// 		.createHash("sha256")
+// 		.update(resetToken)
+// 		.digest("hex");
+// 	//set password expiresat
+// 	this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+// 	//snd token
+// 	return resetToken;
+
+// 	// console.log({ resetToken }, this.passwordResetToken);
+// };
+
 const User = mongoose.model("user", userSchema);
 module.exports = User;
