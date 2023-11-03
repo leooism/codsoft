@@ -5,7 +5,8 @@
 	"author": "Bidhan <leooism10@gmail.com>",
 	"license": "MIT",
 	"scripts": {
-		"dev": "nodemon server.js"
+		"dev": "nodemon server.js",
+		"build": "yarn build"
 	},
 	"dependencies": {
 		"bcrypt": "^5.1.1",
