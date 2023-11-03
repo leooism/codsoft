@@ -11,7 +11,7 @@ const Dashboard = () => {
 		status: string;
 		data: JobApplicationType;
 	}>(
-		`http://localhost:3000/user/appliedJobs?userId=${_id}&recent=true`,
+		`https://codsoft-backend.vercel.app/user/appliedJobs?userId=${_id}&recent=true`,
 		fetcher
 	);
 	if (data && data.status === "Success")

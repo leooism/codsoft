@@ -16,9 +16,13 @@ const JobApplication = () => {
 	const { data, error, isLoading } = useSWR<{
 		status: string;
 		data: JobApplicationType;
-	}>(`http://localhost:3000/user/appliedJobs?userId=${_id}`, fetcher, {
-		refreshInterval: 2000,
-	});
+	}>(
+		`https://codsoft-backend.vercel.app/user/appliedJobs?userId=${_id}`,
+		fetcher,
+		{
+			refreshInterval: 2000,
+		}
+	);
 	if (isLoading) return <p>Loading</p>;
 	if (data && data.status === "Success")
 		return <JobApplicationTable application={data.data} />;

@@ -32,17 +32,20 @@ const Login = () => {
 		const fetchData = async () => {
 			// Default options are marked with *
 			setIsLoading(true);
-			const response = await fetch("http://localhost:3000/user/login", {
-				method: "POST",
-				credentials: "include",
-				body: JSON.stringify({
-					email,
-					password,
-				}),
-				headers: {
-					"Content-Type": "application/json",
-				},
-			});
+			const response = await fetch(
+				"https://codsoft-backend.vercel.app/user/login",
+				{
+					method: "POST",
+					credentials: "include",
+					body: JSON.stringify({
+						email,
+						password,
+					}),
+					headers: {
+						"Content-Type": "application/json",
+					},
+				}
+			);
 			const data = response.json();
 
 			setUser({
@@ -92,8 +95,6 @@ const Login = () => {
 
 	return (
 		<Dialog>
-			
-
 			<DialogTrigger>
 				<Button variant="outline">Login</Button>
 			</DialogTrigger>

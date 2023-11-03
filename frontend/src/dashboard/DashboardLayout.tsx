@@ -98,12 +98,15 @@ export const DashboardLayout = () => {
 												new FormData(form.current, submitter.current)
 											);
 
-											let response = await fetch("http://localhost:3000/job", {
-												method: "post",
-												body: data,
-												credentials: "include",
-												mode: "cors",
-											});
+											let response = await fetch(
+												"https://codsoft-backend.vercel.app/job",
+												{
+													method: "post",
+													body: data,
+													credentials: "include",
+													mode: "cors",
+												}
+											);
 
 											response = await response.json();
 											response.status === "Success" &&

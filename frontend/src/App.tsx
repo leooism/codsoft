@@ -40,7 +40,7 @@ const Job = () => {
 	const { data, error, isLoading } = useSWR<{
 		status: string;
 		job: jobType;
-	}>(`http://localhost:3000/job/${id}`, fetcher);
+	}>(`https://codsoft-backend.vercel.app/job/${id}`, fetcher);
 	if (isLoading) return <p>Loading</p>;
 	if (data && data.status === "Success")
 		return (

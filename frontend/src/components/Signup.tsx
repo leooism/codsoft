@@ -54,7 +54,7 @@ const Signup = () => {
 								);
 
 								let response = await fetch(
-									"http://localhost:3000/user/signup",
+									"https://codsoft-backend.vercel.app/user/signup",
 									{
 										method: "post",
 										body: formData,
@@ -186,7 +186,7 @@ const Signup = () => {
 								);
 
 								let response = await fetch(
-									"http://localhost:3000/user/signup",
+									"https://codsoft-backend.vercel.app/user/signup",
 									{
 										method: "post",
 										body: formData,

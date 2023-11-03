@@ -66,7 +66,7 @@ const JobSearch = () => {
 	// if (isLoading) return <p>Loading</p>;
 	useEffect(() => {
 		async function fetchJob() {
-			const response = await fetch(`http://localhost:3000/job`);
+			const response = await fetch(`https://codsoft-backend.vercel.app/job`);
 			const data = await response.json();
 			if (data.status === "Success") setJobs(data.jobs);
 		}
@@ -199,7 +199,7 @@ const JobSearch = () => {
 											onClick={async (e) => {
 												e.preventDefault();
 												const response = await fetch(
-													"http://localhost:3000/user/applyJob",
+													"https://codsoft-backend.vercel.app/user/applyJob",
 													{
 														method: "post",
 														credentials: "include",

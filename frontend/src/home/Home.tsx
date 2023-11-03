@@ -27,7 +27,7 @@ function Home() {
 			}
 
 			const response = await axios.post(
-				"http://localhost:3000/user/isLoggedIn",
+				"https://codsoft-backend.vercel.app/user/isLoggedIn",
 				{},
 				{
 					withCredentials: true,
