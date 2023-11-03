@@ -15,7 +15,7 @@ connectDatabase();
 
 app.use(
 	cors({
-		origin: process.env.CLIENT_ORIGIN,
+		origin: "https://codsoft-iota.vercel.app",
 		methods: ["GET", "POST", "PUT", "DELETE"],
 		credentials: true,
 	})
