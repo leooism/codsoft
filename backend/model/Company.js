@@ -4,10 +4,10 @@ const { Schema } = mongoose;
 const CompanySchema = new Schema({
 	logo: {
 		type: String,
-		required: true,
 	},
 	name: {
 		type: String,
+		unique: true,
 		required: true,
 	},
 	jobPosted: [{ type: Schema.Types.ObjectId, ref: "job" }],
@@ -16,6 +16,12 @@ const CompanySchema = new Schema({
 		default: 0,
 	},
 	location: [Number],
+	employers: [
+		{
+			type: Schema.Types.ObjectId,
+			ref: "user",
+		},
+	],
 });
 
 const Company = mongoose.model("company", CompanySchema);

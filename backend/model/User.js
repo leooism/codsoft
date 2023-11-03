@@ -1,17 +1,16 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const { Schema } = mongoose;
-const crypto = require("crypto");
 const userSchema = new Schema(
 	{
 		firstName: {
 			type: String,
-			required: [true, "Please enter your first name"],
+			required: [true, "Firstname cannot be blank"],
 		},
 
 		lastName: {
 			type: String,
-			requried: [true, "Please enter your last name"],
+			// requried: [true, "Last name cannot be blank"],
 		},
 
 		email: {
@@ -25,12 +24,17 @@ const userSchema = new Schema(
 		},
 		role: {
 			type: String,
-			enum: ["candidate", "employer", "admin"],
-			defafult: "candidate",
+			enum: ["Candidate", "Employer", "Admin"],
+			defafult: "Candidate",
+			required: [true, "Role must be categorized"],
 		},
-
+		bio: {
+			type: String,
+		},
 		password: {
 			type: String,
+			min: [8, "Password must be 8 character long"],
+			max: 16,
 			require: [true, "Please provide a password"],
 		},
 		passwordConfirm: {
@@ -50,7 +54,15 @@ const userSchema = new Schema(
 			type: Number,
 			default: 0,
 		},
+		company: {
+			type: Schema.Types.ObjectId,
+			ref: "company",
+		},
 		jobApplied: [{ ref: "job", type: Schema.Types.ObjectId }],
+		phoneNumber: {
+			type: String,
+			required: [true, "Must have phone number"],
+		},
 	},
 	{
 		virtuals: {
@@ -66,7 +78,6 @@ const userSchema = new Schema(
 //Before the user is created, the password is crypted and then passwordConfirm is set to undefined
 userSchema.pre("save", async function (next) {
 	if (!this.isModified("password")) return next();
-
 	this.password = await bcrypt.hash(this.password, 12);
 	this.passwordConfirm = undefined;
 	next();

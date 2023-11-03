@@ -1,42 +1,49 @@
 const userRouter = require("express").Router();
 const User = require("../model/User");
-const { login, signup, isLoggedIn } = require("../controllers/authController");
-const AppError = require("../util/AppError");
+const { ObjectId } = require("mongodb");
+
+const {
+	login,
+	signup,
+	isLoggedIn,
+	logout,
+	secureRoute,
+} = require("../controllers/authController");
+
+const { deleteUser, getUser } = require("../controllers/userController");
+const AppError = require("../utils/AppError");
 const JobApplication = require("../model/JobApplication");
-const catchAsync = require("../util/catchAsync");
+const catchAsync = require("../utils/catchAsync");
+
+userRouter.get(
+	"/",
+	catchAsync(async (req, res, next) => {
+		const data = await User.find().select("-password -passwordConfirm").exec();
+		return res.status(200).json({
+			status: "Success",
+			data,
+		});
+	})
+);
+
 userRouter.post("/login", login).post("/signup", signup);
-
-userRouter.delete("/:id", async (req, res) => {
-	const { password } = req.body;
-	const user = await User.findById(req.params.id);
-	if (!user)
-		return res.json({ status: "Failed", message: "User doesn't exist" });
-
-	//Compare password
-	if (await !user.isPasswordCorrect(password)) {
-		return res.json({ status: "Failed", message: "Password is incorrect" });
-	}
-	//If password match delete password
-	// await User.findByIdAndDelete(req.params.id);
-
-	return res.json({
-		status: "Sucess",
-		message:
-			"After 10 days your account will be deleted. Within that time you can reconsider your account",
-	});
-});
+userRouter.delete("/:id", secureRoute, deleteUser);
 
 userRouter.post("/isLoggedIn", isLoggedIn);
 
 userRouter.get(
 	"/appliedJobs",
 	catchAsync(async (req, res) => {
-		const { userId } = req.query;
+		const { userId, recent } = req.query;
 		const data = await JobApplication.find({
 			user: {
 				_id: userId,
 			},
 		})
+			.sort({
+				appliedAt: recent ? -1 : 1,
+			})
+			.limit(recent ? 5 : null)
 			.populate({
 				path: "job",
 			})
@@ -47,37 +54,47 @@ userRouter.get(
 		res.json({ status: "Success", data });
 	})
 );
-userRouter.get("/forgotPassword");
-
-userRouter.get("/resetPassword/:token", async (req, res) => {
-	const token = req.params.token;
-
-	//Check if token is expired
-
-	//Compare token
-
-	//Update user password
-
-	//Upate password changed at
-	//set password rest token to null
-	//set password token expire to null
-});
-userRouter.get("/logout");
-
-userRouter.get(
-	"/:id",
-	catchAsync(async (req, res) => {
-		const user = await User.findById(req.params.id);
-		if (!user) throw new AppError("No user found", 202);
-
-		return res.json({
-			status: "Sucess",
-			user: user.select(
-				"-password -passwordChangedAt -passwordConfirm -passwordResetToken"
-			),
+userRouter.post(
+	"/applyJob",
+	catchAsync(async (req, res, next) => {
+		const { jobId, userId } = req.body;
+		if (
+			await User.findOne({
+				_id: userId,
+				jobApplied: new ObjectId(jobId),
+			})
+		)
+			return next(new AppError("Already applied", 200));
+		const data = await User.findByIdAndUpdate(userId, {
+			$push: {
+				jobApplied: jobId,
+			},
+		});
+		data.save();
+		res.status(201).json({
+			status: "Success",
+			data,
 		});
 	})
 );
+// userRouter.get("/forgotPassword");
+
+// userRouter.get("/resetPassword/:token", async (req, res) => {
+// 	const token = req.params.token;
+
+// 	//Check if token is expired
+
+// 	//Compare token
+
+// 	//Update user password
+
+// 	//Upate password changed at
+// 	//set password rest token to null
+// 	//set password token expire to null
+// });
+userRouter.get("/logout", logout);
+
+userRouter.get("/:id", getUser);
 
 /* 
 
@@ -99,12 +116,5 @@ userRouter.get(
 
 !authorization
 */
-userRouter.post("/company", async (req, res) => {
-	console.log("Hi");
-	console.log(req.body);
-	res.json({
-		status: "Sucess",
-		message: "Hi",
-	});
-});
+
 module.exports = userRouter;

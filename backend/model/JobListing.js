@@ -16,11 +16,12 @@ const jobListingSchema = new Schema({
 	},
 	title: {
 		type: String,
-		required: true,
+		required: [true, "Job must have a title"],
 	},
 	sector: [
 		{
 			type: String,
+			required: [true, "Sector must be selected"],
 		},
 	],
 	type: {

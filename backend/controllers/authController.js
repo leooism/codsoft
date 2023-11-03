@@ -1,8 +1,9 @@
 const jwt = require("jsonwebtoken");
 const User = require("../model/User");
-
-//Create signin token
 const { promisify } = require("util");
+const AppError = require("../utils/AppError");
+const catchAsync = require("../utils/catchAsync");
+//Create signin token
 
 const signInToken = (id) =>
 	jwt.sign({ id }, process.env.JWT_SECRET_TOKEN, {
@@ -29,43 +30,40 @@ const createSendToken = (user, req, res) => {
 	});
 };
 
-exports.login = async (req, res, next) => {
+exports.login = catchAsync(async (req, res, next) => {
 	const { email, password } = req.body;
 
 	if (!email || !password)
-		return res.json({
-			status: "Failed",
-			message: "Please provide email or password",
-		});
+		return next(AppError("Please provide email or password", 400));
 	//Check user exist
 	const user = await User.findOne({
 		email: email,
 	});
-	if (!user)
-		return res.json({ status: "Failed", message: "User doesn't exist" });
+	if (!user) return next(new AppError("User doesn't exist", 202));
 	//check password match
-	if (!user.isPasswordCorrect(password))
-		return res.json({ status: "Failed", message: "Password didn't match" });
+	const isPasswordCorrect = await user.isPasswordCorrect(password);
+	console.log(!isPasswordCorrect);
+	if (!isPasswordCorrect)
+		return next(new AppError("Email or password is incorrect", 400));
 
 	//Successfully log in user
 	createSendToken(user, req, res);
-};
+});
 
-exports.signup = async (req, res) => {
+exports.signup = catchAsync(async (req, res, next) => {
 	const {
 		firstName,
 		lastName,
 		email,
 		phoneNumber,
 		sectors,
-		resume,
+		// resume,
 		role,
 		password,
 		passwordConfirm,
 	} = req.body;
 	const isPasswordMatch = await User.isPasswordMatch(password, passwordConfirm);
-	if (!isPasswordMatch)
-		return res.json({ status: "Failed", message: "Password didn't match" });
+	if (!isPasswordMatch) throw new AppError("Password didn't match", 202);
 
 	const user = await User.create({
 		firstName,
@@ -74,59 +72,73 @@ exports.signup = async (req, res) => {
 		password,
 		role,
 		sectors,
-		phoneNumber,
-		resume,
+		// resume,
+		phoneNumber: phoneNumber.trim(),
 		passwordConfirm,
 	});
 
 	createSendToken(user, req, res);
-};
+});
 
-exports.logout = async (_, res) => {
-	res.cookie("jwt", "just_logged_out", {
-		expires: 0,
+exports.logout = catchAsync((req, res, next) => {
+	res.cookie("jwt", "loggedout", {
+		expires: new Date(),
+		withCredentials: true,
 		httpOnly: true,
 	});
-	res.json({
-		status: "Sucessful",
-		message: "Logged out sucessfully",
+	res.status(200).json({
+		status: "Success",
+		message: "Loggedout Successfully",
 	});
-};
+});
 
-exports.isLoggedIn = async (req, res) => {
-	if (req.cookies.jwt)
-		try {
-			// 1) verify token
-			const decoded = await promisify(jwt.verify)(
-				req.cookies.jwt,
-				process.env.JWT_SECRET_TOKEN
-			);
-			// 2) Check if user still exists
-			const currentUser = await User.findById(decoded.id);
-			if (!currentUser) {
-				return res.json({
-					status: "Failed",
-					data: {},
-				});
-			}
+exports.isLoggedIn = catchAsync(async (req, res, next) => {
+	if (req.cookies.jwt) {
+		// 1) verify token
+		const decoded = await promisify(jwt.verify)(
+			req.cookies.jwt,
+			process.env.JWT_SECRET_TOKEN
+		);
+		// 2) Check if user still exists
+		const currentUser = await User.findById(decoded.id);
+		if (!currentUser) next(new AppError("User doesn't exist", 202));
 
-			// THERE IS A LOGGED IN USER
+		// THERE IS A LOGGED IN USER
 
-			return res.json({
-				status: "Success",
-				data: currentUser,
-			});
-		} catch (err) {
-			console.log(err);
-			return res.json({
-				status: "Failed",
-				err,
-			});
-		}
-	return res.json({
-		status: "Failed",
-		data: {},
-	});
+		return res.json({
+			status: "Success",
+			data: currentUser,
+		});
+	}
+
+	next(new AppError("User is not logged in", 401));
+});
+exports.secureRoute = catchAsync(async (req, res, next) => {
+	if (req.cookies.jwt) {
+		// 1) verify token
+		const decoded = await promisify(jwt.verify)(
+			req.cookies.jwt,
+			process.env.JWT_SECRET_TOKEN
+		);
+		// 2) Check if user still exists
+		const currentUser = await User.findById(decoded.id);
+		if (!currentUser) return next(new AppError("User doesn't exist", 202));
+
+		// THERE IS A LOGGED IN USER
+		req.user = currentUser;
+		return next();
+	}
+
+	return next(new AppError("User must be logged in", 402));
+});
+
+exports.restrictTo = (...roles) => {
+	return async (req, res, next) => {
+		console.log(req.user.role);
+		if (!roles.includes(req.user.role))
+			return next(new AppError("You are not allowed to post job", 401));
+		return next();
+	};
 };
 
 // exports.forgotPassword = async (req, res) => {
