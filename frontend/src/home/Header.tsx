@@ -6,7 +6,7 @@ import logo from "../assets/logo.svg";
 import Login from "../components/Login";
 import Signup from "../components/Signup";
 import { Link } from "react-router-dom";
-import { useUserContext } from "../main";
+import { useUserContext } from "../store/UserContext";
 
 const Header = () => {
 	const [isLoggedIn, setIsloggedIn] = useState(false);
@@ -24,8 +24,12 @@ const Header = () => {
 				<HamburgerMenuIcon className="h-4 w-4" />
 			</Button>
 			<nav className="hidden sm:flex gap-2 text-sm items-center">
-				<a href="#">About</a>
-				<a href="#">Contact</a>
+				<a href="#about" className="font-semibold hover:underline">
+					About
+				</a>
+				<a href="#contact" className="font-semibold hover:underline">
+					Contact
+				</a>
 				{!isLoggedIn && (
 					<div className="flex gap-2">
 						<Login />

@@ -11,12 +11,18 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../@/components/ui/select";
+import { Form } from "react-router-dom";
 const Hero = () => {
 	return (
 		<section className="flex justify-center items-center h-[80vh] flex-col gap-2">
-			<img src={hero} alt="" className="w-[80%] h-[80%]" />
-			<div className="flex gap-5 bg-white sm:flex-row flex-col  rounded-2xl shadow-2xl p-2 items-center">
-				<div className="flex gap-3 sm:flex-row flex-col items-center">
+			<img src={hero} alt="Hero Image" className="w-[80%] h-[80%]" />
+			<Form
+				className="flex gap-5 bg-white sm:flex-row flex-col  rounded-2xl shadow-2xl p-2 items-center"
+				onSubmit={(e) => {
+					e.preventDefault();
+				}}
+			>
+				<div className="flex gap-3 sm:flex-row flex-col md:items-center">
 					<div className="flex flex-col gap-2">
 						<label htmlFor="location">Location</label>
 						<input
@@ -26,7 +32,10 @@ const Hero = () => {
 							className="p-2 border-2 outline-none rounded-lg border-gray-400"
 						/>
 					</div>
-					<Separator orientation="vertical" className=" h-14 mt-5 " />
+					<Separator
+						orientation="vertical"
+						className="hidden md:flex h-14 mt-5 "
+					/>
 					<div className="flex flex-col gap-2">
 						<label htmlFor="type">Type</label>
 						<Select>
@@ -45,10 +54,14 @@ const Hero = () => {
 						</Select>{" "}
 					</div>
 				</div>
-				<Button variant="secondary" className="bg-blue-400 text-white mt-5">
+				<Button
+					variant="secondary"
+					className="bg-blue-400 text-white mt-5"
+					type="submit"
+				>
 					Search
 				</Button>
-			</div>
+			</Form>
 		</section>
 	);
 };

@@ -20,7 +20,12 @@ import { Checkbox } from "../@/components/ui/checkbox";
 
 import { MapPinIcon, Users2, RotateCcw as RefreshIcon } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useUserContext } from "../main";
+import { useUserContext } from "../store/UserContext";
+
+import { ToastContainer } from "react-toastify";
+import API_URL from "../constant/APIURL";
+
+// --------------------------------->
 export type jobType = {
 	_id: string;
 	urgent: boolean;
@@ -45,8 +50,8 @@ export type responseType = {
 	length: number;
 	jobs: jobType[];
 };
-import { toast, ToastContainer } from "react-toastify";
 
+//------------------------------------------------------->
 const JobSearch = () => {
 	const [title, setTitle] = useState("");
 	const [sector, setSector] = useState("");
@@ -57,16 +62,10 @@ const JobSearch = () => {
 	const [jobs, setJobs] = useState([]);
 	const [fetchData, setFetchData] = useState(true);
 	const { _id: userId } = useUserContext();
-	// if (error)
-	// 	return (
-	// 		<h1 className="w-screen h-screen text-5xl flex items-center  justify-center font-bold">
-	// 			Something went wrong
-	// 		</h1>
-	// 	);
-	// if (isLoading) return <p>Loading</p>;
+
 	useEffect(() => {
 		async function fetchJob() {
-			const response = await fetch(`https://codsoft-backend.vercel.app/job`);
+			const response = await fetch(`${API_URL}/job`);
 			const data = await response.json();
 			if (data.status === "Success") setJobs(data.jobs);
 		}
@@ -199,7 +198,7 @@ const JobSearch = () => {
 											onClick={async (e) => {
 												e.preventDefault();
 												const response = await fetch(
-													"https://codsoft-backend.vercel.app/user/applyJob",
+													"${API_URL}/user/applyJob",
 													{
 														method: "post",
 														credentials: "include",
@@ -210,7 +209,6 @@ const JobSearch = () => {
 													}
 												);
 												const data = await response.json();
-												console.log(data);
 											}}
 										>
 											Apply

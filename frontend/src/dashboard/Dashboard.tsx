@@ -3,17 +3,14 @@ import AreaChart from "./dashboard-charts/AreaChart";
 import { JobApplicationTable } from "./JobApplicationTable";
 import useSWR from "swr";
 import fetcher from "../libs/fetcher";
-import { useUserContext } from "../main";
+import { useUserContext } from "../store/UserContext";
 const Dashboard = () => {
 	const { _id } = useUserContext();
 
 	const { data, error, isLoading } = useSWR<{
 		status: string;
 		data: JobApplicationType;
-	}>(
-		`https://codsoft-backend.vercel.app/user/appliedJobs?userId=${_id}&recent=true`,
-		fetcher
-	);
+	}>(`${API_URL}/user/appliedJobs?userId=${_id}&recent=true`, fetcher);
 	if (data && data.status === "Success")
 		return (
 			<div className="flex flex-col gap-5 items-center justify-center p-2">

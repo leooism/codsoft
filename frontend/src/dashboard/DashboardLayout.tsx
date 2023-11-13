@@ -12,7 +12,7 @@ import {
 	MagnifyingGlassIcon,
 } from "@radix-ui/react-icons";
 import { Form, Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useUserContext, useDarkMode } from "../main";
+// import { useUserContext, useDarkMode } from "../main";
 
 import logo from "../assets/logo.svg";
 import { PlusIcon, Users2Icon } from "lucide-react";
@@ -30,6 +30,7 @@ import { Button } from "../@/components/ui/button";
 import { useCookies } from "react-cookie";
 import Select from "react-select";
 import { toast, ToastContainer } from "react-toastify";
+import API_URL from "../constant/APIURL";
 
 export const DashboardLayout = () => {
 	const form = useRef<HTMLFormElement>(null);
@@ -98,15 +99,12 @@ export const DashboardLayout = () => {
 												new FormData(form.current, submitter.current)
 											);
 
-											let response = await fetch(
-												"https://codsoft-backend.vercel.app/job",
-												{
-													method: "post",
-													body: data,
-													credentials: "include",
-													mode: "cors",
-												}
-											);
+											let response = await fetch(`${API_URL}/job`, {
+												method: "post",
+												body: data,
+												credentials: "include",
+												mode: "cors",
+											});
 
 											response = await response.json();
 											response.status === "Success" &&

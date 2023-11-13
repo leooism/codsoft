@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
 	Dialog,
 	DialogContent,
@@ -10,75 +10,62 @@ import { Input } from "../@/components/ui/input";
 import { Label } from "../@/components/ui/label";
 import { Button } from "../@/components/ui/button";
 
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-// import { useNavigate } from "react-router-dom";
-import { useUserContext } from "../main";
-// import { useCookies } from "react-cookie";
+import { useUserContext } from "../store/UserContext";
+import { Form } from "react-router-dom";
 
+// import { useCookies } from "react-cookie";
 // import { useNavigate } from "react-router-dom";
+
+import { toast, ToastContainer } from "react-toastify";
+import API_URL from "../constant/APIURL";
 
 const Login = () => {
-	// const navigate = useNavigate();
-
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	// const [error, setError] = useState("");
+	const formRef = useRef<HTMLFormElement>(null);
+	const submitterRef = useRef<HTMLButtonElement>(null);
 	const [isLoading, setIsLoading] = useState(false);
-	// const navigate = useNavigate();
 	const { setUser } = useUserContext();
 	const handleLoginSubmit = async (e) => {
 		e.preventDefault();
 		const fetchData = async () => {
 			// Default options are marked with *
 			setIsLoading(true);
-			const response = await fetch(
-				"https://codsoft-backend.vercel.app/user/login",
-				{
-					method: "POST",
-					credentials: "include",
-					body: JSON.stringify({
-						email,
-						password,
-					}),
-					headers: {
-						"Content-Type": "application/json",
-					},
-				}
+			const formData = new URLSearchParams(
+				new FormData(formRef.current, submitterRef.current)
 			);
-			const data = await response.json();
-			setUser({
-				_id: data.data.user._id,
-				email: data.data.user.email,
-				fullName: data.data.user.firstName,
-				role: data.data.user.role,
-				profileImage: data.data.user.photo,
+			const response = await fetch(`${API_URL}/user/login`, {
+				method: "POST",
+				credentials: "include",
+				body: formData,
 			});
-			// if (data.token) {
-			// 	// window.cookie
-			// 	setCookie("jwt", data.token, {
-			// 		expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-			// 		httpOnly: true,
-			// 	});
-			// }
+			const data = await response.json();
+			if (data.status === "Success")
+				setUser({
+					_id: data.data.user._id,
+					email: data.data.user.email,
+					fullName: data.data.user.firstName,
+					role: data.data.user.role,
+					profileImage: data.data.user.photo,
+				});
+
+			if (data.status === "Failed")
+				toast(data.message, {
+					position: "top-right",
+					autoClose: 10,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: false,
+					draggable: true,
+					progress: undefined,
+					theme: "light",
+				});
 
 			setIsLoading(false);
-
-			toast("Sucessfully Logged In", {
-				position: "top-right",
-				autoClose: 10,
-				hideProgressBar: false,
-				closeOnClick: true,
-				pauseOnHover: false,
-				draggable: true,
-				progress: undefined,
-				theme: "light",
-			});
 		};
 		try {
 			fetchData();
 		} catch (err) {
-			toast.error("🦄 Wow so easy!", {
+			toast.error(err.message, {
 				position: "top-right",
 				autoClose: 5000,
 				hideProgressBar: false,
@@ -94,6 +81,18 @@ const Login = () => {
 
 	return (
 		<Dialog>
+			<ToastContainer
+				position="top-right"
+				autoClose={3000}
+				hideProgressBar={false}
+				newestOnTop={false}
+				closeOnClick
+				rtl={false}
+				pauseOnFocusLoss
+				draggable
+				pauseOnHover
+				theme="light"
+			/>
 			<DialogTrigger>
 				<Button variant="outline">Login</Button>
 			</DialogTrigger>
@@ -102,10 +101,10 @@ const Login = () => {
 					<DialogTitle>Log In</DialogTitle>
 					{isLoading && <p>Loggging</p>}
 				</DialogHeader>
-				<form
-					action=""
+				<Form
 					onSubmit={handleLoginSubmit}
 					className="flex flex-col gap-2 "
+					ref={formRef}
 				>
 					<div className="flex flex-col w-full gap-1">
 						<Label htmlFor="email">Email</Label>
@@ -114,10 +113,6 @@ const Login = () => {
 							id="email"
 							placeholder="Your Email Address"
 							name="email"
-							value={email}
-							onChange={(e) => {
-								setEmail(e?.target.value);
-							}}
 							required
 						/>
 					</div>
@@ -125,18 +120,16 @@ const Login = () => {
 						<Label htmlFor="email">Password</Label>
 						<Input
 							type="password"
-							value={password}
-							onChange={(e) => setPassword(e.target.value)}
 							id="text"
 							placeholder="Your Password"
 							name="password"
 							required
 						/>
 					</div>
-					<Button className="w-fit" type="submit">
+					<Button className="w-fit" type="submit" ref={submitterRef}>
 						Submit
 					</Button>
-				</form>
+				</Form>
 			</DialogContent>
 		</Dialog>
 	);
